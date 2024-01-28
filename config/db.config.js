@@ -2,7 +2,7 @@ module.exports = {
     HOST: "localhost",
     USER: "pguser",
     PASSWORD: "123456",
-    DB: "tableau_de_bord",
+    DB: "gestionProduction",
     dialect: "postgres",
     pool: {
         max: 5,

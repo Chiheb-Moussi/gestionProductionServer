@@ -1,6 +1,6 @@
 module.exports = (sequelize, Sequelize) => {
     const User = sequelize.define("user", {
-        name_user: {
+        username: {
             type: Sequelize.STRING
         },
         nom: {
@@ -14,9 +14,6 @@ module.exports = (sequelize, Sequelize) => {
         },
         active: {
             type: Sequelize.BOOLEAN
-        },
-        role: {
-            type: Sequelize.STRING
         }
     }, {
         tableName: 'user',

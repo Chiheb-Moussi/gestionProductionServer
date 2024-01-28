@@ -1,21 +1,20 @@
 const db = require("../models");
 const config = require("../config/auth.config");
 const User = db.user;
+const UserRole = db.userRole;
 
 const Op = db.Sequelize.Op;
 
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 
-exports.signup = (req, res) => {
-    // Enregistrer l'utilisateur à la bd
-
+exports.createUser = (req, res) => {
     User.create({
-        name_user: req.body.username,
-        role: req.body.role,
+        username: req.body.username,
+        role_id: req.body.role.id,
         nom: req.body.nom,
         prenom: req.body.prenom,
-        active: req.body.status,
+        active: req.body.active,
         password: bcrypt.hashSync(req.body.password, 8)
     })
         .then(user => {
@@ -29,11 +28,12 @@ exports.signup = (req, res) => {
 exports.signin = (req, res) => {
     User.findOne({
         where: {
-            name_user: req.body.username
-        }
+            username: req.body.username
+        },
+        include: db.userRole
     })
         .then(user => {
-            console.log(user)
+            console.log({user})
             if (!user) {
                 return res.status(404).send({ message: "User Not found." });
             }
@@ -61,12 +61,13 @@ exports.signin = (req, res) => {
 
             res.status(200).send({user:{
                     id: user.id,
-                    username: user.name_user,
-                    role: user.role,
+                    username: user.username,
+                    role: user.user_role,
                     nom: user.nom,
                     prenom: user.prenom,
-                    status: user.active,
-                    accessToken: token
+                    active: user.active,
+                    accessToken: token,
+                    isAdmin: ['Admin', 'Super admin'].includes(user.user_role.role)
                 }});
         })
         .catch(err => {
@@ -75,7 +76,7 @@ exports.signin = (req, res) => {
 };
 
 exports.getUsers = async (req, res) => {
-    const users = await User.findAll();
+    const users = await User.findAll({include: db.userRole});
     res.send({users})
 }
 
@@ -85,14 +86,12 @@ exports.getUser = async (req, res) => {
 }
 
 exports.updateUser = (req, res) => {
-    // Modifier l'utilisateur à la bd
-
     User.update({
-        name_user: req.body.username,
-        role: req.body.role,
+        username: req.body.username,
+        role_id: req.body.role.id,
         nom: req.body.nom,
         prenom: req.body.prenom,
-        active: req.body.status,
+        active: req.body.active,
         password: bcrypt.hashSync(req.body.password, 8)
     }, {
         where: { id: req.params.id}
@@ -104,3 +103,8 @@ exports.updateUser = (req, res) => {
             res.status(500).send({ message: err.message });
         });
 };
+
+exports.getUserRoles = async (req, res) => {
+    const roles = await UserRole.findAll();
+    res.send({roles})
+}
